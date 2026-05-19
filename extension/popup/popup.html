@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOCUS</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header>
+    <span class="logo">FOCUS</span>
+    <div class="header-right">
+      <span id="streak-badge" class="streak-badge" hidden></span>
+      <span id="status-dot" class="dot dot--idle" title="No active session"></span>
+    </div>
+  </header>
+
+  <!-- ── Idle: set up session ── -->
+  <section id="view-idle">
+    <p class="label">What are you working on?</p>
+    <textarea id="task-input" placeholder="e.g. Watching Python tutorial on YouTube" rows="2" maxlength="200"></textarea>
+
+    <p class="label">Where will you be? <span class="hint">(paste the link)</span></p>
+    <input id="url-input" type="url" placeholder="e.g. https://www.youtube.com/watch?v=..." />
+
+    <div class="row-2">
+      <div class="field">
+        <p class="label">Duration <span class="hint">(min)</span></p>
+        <input id="duration-input" type="number" min="1" max="480" placeholder="60" />
+      </div>
+      <div class="field">
+        <p class="label">Overrides allowed</p>
+        <input id="budget-input" type="number" min="0" max="20" placeholder="3" />
+      </div>
+    </div>
+
+    <!-- Schedule delayed start -->
+    <div id="schedule-wrap">
+      <label class="toggle-row">
+        <span class="label" style="margin:0">Schedule start</span>
+        <input type="checkbox" id="schedule-toggle" />
+        <span class="toggle-slider"></span>
+      </label>
+      <div id="schedule-fields" hidden>
+        <p class="label" style="margin-top:8px">Start in how many minutes?</p>
+        <input id="delay-input" type="number" min="1" max="1440" placeholder="e.g. 30" />
+        <p id="schedule-status" class="hint" style="margin-top:4px"></p>
+      </div>
+    </div>
+
+    <!-- Strict mode -->
+    <label class="toggle-row">
+      <span class="label" style="margin:0">Strict mode <span class="hint">(no override)</span></span>
+      <input type="checkbox" id="strict-toggle" />
+      <span class="toggle-slider"></span>
+    </label>
+
+    <button id="btn-start">Start Tracking</button>
+    <button id="btn-dashboard" class="btn-secondary" style="margin-top:6px">View Dashboard</button>
+  </section>
+
+  <!-- ── Active session ── -->
+  <section id="view-active" hidden>
+    <div class="task-chip">
+      <span class="task-chip__label">Task</span>
+      <span id="active-task-text"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat__value" id="stat-duration">0m</span>
+        <span class="stat__label">elapsed</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="stat-remaining">—</span>
+        <span class="stat__label">remaining</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="stat-offtask">0</span>
+        <span class="stat__label">blocks</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="stat-overrides">—</span>
+        <span class="stat__label">overrides left</span>
+      </div>
+    </div>
+
+    <div id="relevance-bar-wrap">
+      <span class="label">Last tab decision</span>
+      <div class="bar-bg"><div class="bar-fill" id="relevance-bar"></div></div>
+      <span id="relevance-score">—</span>
+    </div>
+
+    <!-- Live ML decision log -->
+    <div id="decision-log-wrap">
+      <p class="label">ML decision log</p>
+      <div id="decision-log"></div>
+    </div>
+
+    <div id="strict-indicator" hidden>
+      <span class="strict-badge">STRICT MODE ON — no overrides</span>
+    </div>
+
+    <button id="btn-stop" class="btn-stop">Stop Session</button>
+  </section>
+
+  <!-- ── Summary ── -->
+  <section id="view-summary" hidden>
+    <h2>Session complete</h2>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat__value" id="sum-duration">—</span>
+        <span class="stat__label">total time</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="sum-focus">—</span>
+        <span class="stat__label">focus score</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value" id="sum-blocks">—</span>
+        <span class="stat__label">blocks fired</span>
+      </div>
+    </div>
+    <p id="sum-streak" class="streak-msg"></p>
+    <p id="sum-message" class="summary-msg"></p>
+    <button id="btn-new">Track another task</button>
+    <button id="btn-dashboard-summary" class="btn-secondary" style="margin-top:6px">View Dashboard</button>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
