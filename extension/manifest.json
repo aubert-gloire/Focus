@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "FOCUS",
+  "version": "2.0.0",
+  "description": "Stay on task. FOCUS tracks your tabs and redirects you when you drift.",
+
+  "permissions": [
+    "tabs",
+    "storage",
+    "notifications",
+    "alarms",
+    "scripting"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "48": "icons/icon48.png"
+    }
+  },
+
+  "icons": {
+    "48": "icons/icon48.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "onboarding.html", "dashboard.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "focusflow@capstone.dev",
+      "strict_min_version": "109.0"
+    }
+  }
+}
