@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOCUS — Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --border:  #2a2d3a;
+      --accent:  #6c63ff;
+      --green:   #4caf79;
+      --red:     #e05a5a;
+      --orange:  #f0a500;
+      --text:    #e8eaf0;
+      --muted:   #7b7f94;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      padding: 32px 20px 60px;
+    }
+    .page { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+    /* Header */
+    .dash-header { display: flex; align-items: center; justify-content: space-between; }
+    .dash-header .logo { font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
+    .dash-header .sub  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    #streak-display    { font-size: 18px; font-weight: 700; color: var(--orange); }
+
+    /* Section titles */
+    .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+    /* Summary cards */
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+    }
+    .card .val { font-size: 28px; font-weight: 800; color: var(--accent); display: block; }
+    .card .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; display: block; }
+    .card.green .val { color: var(--green); }
+    .card.orange .val { color: var(--orange); }
+    .card.red .val { color: var(--red); }
+
+    /* Chart */
+    .chart-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    #focus-chart { width: 100%; height: 180px; display: block; }
+
+    /* Two columns */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Sessions list */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .session-item:last-child { border-bottom: none; }
+    .session-task { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+    .session-meta { font-size: 11px; color: var(--muted); }
+    .session-score {
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Domain pills */
+    .domain-list { display: flex; flex-direction: column; gap: 8px; }
+    .domain-row { display: flex; align-items: center; gap: 10px; }
+    .domain-name { font-size: 12px; color: var(--text); min-width: 130px; }
+    .domain-bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .domain-bar-fill { height: 100%; background: var(--red); border-radius: 99px; }
+    .domain-count { font-size: 11px; color: var(--muted); min-width: 30px; text-align: right; }
+
+    /* Empty state */
+    .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+
+    /* Grade badge */
+    .grade {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .grade-s { background: rgba(76,175,121,0.15); color: var(--green); }
+    .grade-a { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .grade-b { background: rgba(240,165,0,0.15);  color: var(--orange); }
+    .grade-c { background: rgba(224,90,90,0.15);  color: var(--red); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div>
+      <div class="logo">FOCUS</div>
+      <div class="sub">Your focus analytics</div>
+    </div>
+    <div id="streak-display"></div>
+  </div>
+
+  <!-- Summary cards -->
+  <div>
+    <p class="section-title">All time</p>
+    <div class="cards">
+      <div class="card green">
+        <span class="val" id="card-sessions">0</span>
+        <span class="lbl">Total sessions</span>
+      </div>
+      <div class="card">
+        <span class="val" id="card-hours">0h</span>
+        <span class="lbl">Total focus time</span>
+      </div>
+      <div class="card orange">
+        <span class="val" id="card-streak">0</span>
+        <span class="lbl">Best streak (days)</span>
+      </div>
+      <div class="card">
+        <span class="val" id="card-avg">—</span>
+        <span class="lbl">Avg focus score</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7-day chart -->
+  <div class="chart-wrap">
+    <p class="section-title">Focus score — last 7 days</p>
+    <canvas id="focus-chart"></canvas>
+  </div>
+
+  <!-- Sessions + Top distractions -->
+  <div class="two-col">
+
+    <!-- Recent sessions -->
+    <div class="panel">
+      <p class="section-title">Recent sessions</p>
+      <div id="sessions-list"><p class="empty">No sessions yet</p></div>
+    </div>
+
+    <!-- Top distracting domains -->
+    <div class="panel">
+      <p class="section-title">Top distractions</p>
+      <div id="domain-list"><p class="empty">No data yet</p></div>
+    </div>
+
+  </div>
+
+</div>
+<script src="dashboard.js"></script>
+</body>
+</html>
