@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to FOCUS</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --border:  #2a2d3a;
+      --accent:  #6c63ff;
+      --green:   #4caf79;
+      --text:    #e8eaf0;
+      --muted:   #7b7f94;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      gap: 32px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+
+    .tagline {
+      font-size: 16px;
+      color: var(--muted);
+      margin-top: -20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      max-width: 560px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .step-text p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .privacy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      max-width: 560px;
+      width: 100%;
+    }
+
+    .privacy-card h3 {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .privacy-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .privacy-card li {
+      font-size: 13px;
+      color: var(--muted);
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .privacy-card li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    button {
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <span class="logo">FOCUS</span>
+  <p class="tagline">Your personal focus tracker</p>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <div class="step-text">
+          <strong>Describe your task</strong>
+          <p>Tell FOCUS what you are working on, how long you plan to work, and paste the link to where you will be — e.g. your YouTube tutorial, Coursera course, or Perusall assignment.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div class="step-text">
+          <strong>Work normally</strong>
+          <p>FOCUS runs quietly in the background, watching which tabs you visit and comparing them against your task.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div class="step-text">
+          <strong>Get redirected when you drift</strong>
+          <p>If you open an off-task tab, FOCUS intercepts it and gives you 10 seconds to return — or override if it was intentional.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">4</span>
+        <div class="step-text">
+          <strong>Review your session</strong>
+          <p>After stopping, see your focus score, how many blocks fired, and export your logs any time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="privacy-card">
+    <h3>Privacy — what we collect and where it stays</h3>
+    <ul>
+      <li>All data is stored locally on your device using browser storage. Nothing is sent to any server.</li>
+      <li>Tab titles and URLs are logged only during an active session you start.</li>
+      <li>You can export or delete your data any time from the popup.</li>
+      <li>FOCUS never reads page content, only tab titles and URLs.</li>
+    </ul>
+  </div>
+
+  <button id="btn-done">Got it — let's focus</button>
+  <script src="onboarding.js"></script>
+
+</body>
+</html>
