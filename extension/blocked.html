@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOCUS — Stay on Track</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d27;
+      --border:  #2a2d3a;
+      --accent:  #6c63ff;
+      --red:     #e05a5a;
+      --green:   #4caf79;
+      --text:    #e8eaf0;
+      --muted:   #7b7f94;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 32px 20px;
+    }
+
+    .logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.4px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .blocked-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--red);
+    }
+
+    .blocked-site {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .task-reminder {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .task-name {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Countdown ring */
+    .countdown-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ring {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .ring circle {
+      fill: none;
+      stroke-width: 5;
+    }
+
+    .ring .track  { stroke: var(--border); }
+    .ring .fill   { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+
+    .ring .number {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .countdown-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ML score bar */
+    #ml-score-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ml-bar-bg {
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .ml-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--red);
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+    .ml-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+
+    #btn-return  { background: var(--accent); color: #fff; }
+    #btn-override {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <span class="logo">FOCUS</span>
+
+  <div class="card">
+    <p class="blocked-label">Distraction blocked</p>
+    <p class="blocked-site" id="blocked-site">—</p>
+
+    <p class="task-reminder">
+      Your current task is:<br>
+      <span class="task-name" id="task-name">—</span><br>
+      <span id="duration-info"></span>
+    </p>
+
+    <div id="ml-score-wrap">
+      <div class="ml-bar-bg">
+        <div class="ml-bar-fill" id="ml-bar"></div>
+      </div>
+      <p class="ml-label" id="ml-label">—</p>
+    </div>
+
+    <div class="countdown-wrap">
+      <div class="ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="track" cx="40" cy="40" r="35" />
+          <circle class="fill"  cx="40" cy="40" r="35" id="ring-fill"
+            stroke-dasharray="219.9"
+            stroke-dashoffset="0"
+          />
+        </svg>
+        <span class="number" id="countdown-number">10</span>
+      </div>
+      <span class="countdown-label">Returning you to your task in <span id="countdown-text">10</span>s</span>
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-return">Take me back</button>
+      <button id="btn-override">Override — stay here</button>
+    </div>
+  </div>
+
+  <script src="blocked.js"></script>
+</body>
+</html>
