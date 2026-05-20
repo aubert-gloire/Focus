@@ -33,19 +33,31 @@ chrome.runtime.onStartup.addListener(() => {
 
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   try {
+    await ensureSession();
     const tab = await chrome.tabs.get(tabId);
     if (tab.url && tab.status === 'complete') handleTabChange(tab);
   } catch (_) {}
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (
     changeInfo.status === 'complete' &&
     tab.active && tab.url &&
     !tab.url.startsWith('chrome://') &&
     !tab.url.startsWith('chrome-extension://')
-  ) handleTabChange(tab);
+  ) {
+    await ensureSession();
+    handleTabChange(tab);
+  }
 });
+
+// Restore session from storage if the service worker was killed mid-session
+async function ensureSession() {
+  if (!session) {
+    const { activeSession } = await chrome.storage.local.get('activeSession');
+    if (activeSession) session = activeSession;
+  }
+}
 
 // ─── Core tab handler ─────────────────────────────────────────────────────────
 
@@ -419,6 +431,19 @@ async function startSession(task, taskUrl, expectedDurationMin, strictMode = fal
     events:              []
   };
   await chrome.storage.local.set({ activeSession: session });
+
+  // Badge on extension icon so the user always knows a session is running
+  chrome.action.setBadgeText({ text: 'ON' });
+  chrome.action.setBadgeBackgroundColor({ color: '#6c63ff' });
+
+  // Session-start notification
+  chrome.notifications.create('session_start', {
+    type: 'basic', iconUrl: 'icons/icon48.png',
+    title: 'FOCUS — Session started',
+    message: `Tracking: "${task}". Stay focused.`,
+    priority: 2
+  });
+
   await scanAllOpenTabs();
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (activeTab) handleTabChange(activeTab);
@@ -449,6 +474,7 @@ async function stopSession() {
     priority: 2
   });
 
+  chrome.action.setBadgeText({ text: '' });
   await chrome.storage.local.remove('activeSession');
   session = null;
   return { ...summary, streak };
@@ -466,5 +492,9 @@ async function scheduleSession(task, taskUrl, durationMin, delayMin, strictMode,
 // ─── Restore session on service worker restart ────────────────────────────────
 
 chrome.storage.local.get('activeSession', ({ activeSession }) => {
-  if (activeSession) session = activeSession;
+  if (activeSession) {
+    session = activeSession;
+    chrome.action.setBadgeText({ text: 'ON' });
+    chrome.action.setBadgeBackgroundColor({ color: '#6c63ff' });
+  }
 });
