@@ -10,6 +10,7 @@ const urlInput      = $('url-input');
 const durationInput = $('duration-input');
 const budgetInput   = $('budget-input');
 const strictToggle  = $('strict-toggle');
+const voiceToggle   = $('voice-toggle');
 const schedToggle   = $('schedule-toggle');
 const schedFields   = $('schedule-fields');
 const delayInput    = $('delay-input');
@@ -105,6 +106,26 @@ async function refreshStats() {
   }
 }
 
+// ─── Voice feedback ───────────────────────────────────────────────────────────
+
+function speakIfEnabled(text) {
+  chrome.storage.local.get('voiceEnabled', ({ voiceEnabled }) => {
+    if (voiceEnabled === false) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  });
+}
+
+chrome.storage.local.get('voiceEnabled', ({ voiceEnabled }) => {
+  voiceToggle.checked = voiceEnabled !== false;
+});
+
+voiceToggle.addEventListener('change', () => {
+  chrome.storage.local.set({ voiceEnabled: voiceToggle.checked });
+});
+
 // ─── Schedule toggle ──────────────────────────────────────────────────────────
 
 schedToggle.addEventListener('change', () => {
@@ -140,6 +161,7 @@ $('btn-start').addEventListener('click', async () => {
   setStatusDot('active');
   showView('active');
   startPolling();
+  speakIfEnabled(`Session started. Good luck with ${task}.`);
 });
 
 // ─── Stop session ─────────────────────────────────────────────────────────────
@@ -147,7 +169,12 @@ $('btn-start').addEventListener('click', async () => {
 $('btn-stop').addEventListener('click', async () => {
   stopPolling();
   const { log } = await sendMsg({ type: 'STOP_SESSION' });
-  if (log) renderSummary(log);
+  if (log) {
+    renderSummary(log);
+    speakIfEnabled(
+      `Session complete. You scored ${log.focusPct} percent focus with ${log.blocksCount} block${log.blocksCount === 1 ? '' : 's'}.`
+    );
+  }
   setStatusDot('stopped');
   showView('summary');
 });

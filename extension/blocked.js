@@ -22,6 +22,21 @@ document.getElementById('task-name').textContent    = task;
 document.getElementById('duration-info').textContent =
   duration > 0 ? `Expected session: ${duration} minutes` : '';
 
+// ─── Voice alert ─────────────────────────────────────────────────────────────
+
+chrome.storage.local.get('voiceEnabled', ({ voiceEnabled }) => {
+  if (voiceEnabled === false) return;
+  let site = blockedUrl;
+  try { site = new URL(blockedUrl).hostname.replace('www.', ''); } catch (_) {}
+  const msg = site
+    ? `${site} looks like a distraction. Heading back to your task.`
+    : 'Distraction detected. Heading back.';
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(msg);
+  u.rate = 0.95;
+  window.speechSynthesis.speak(u);
+});
+
 // ML score bar
 const mlBar   = document.getElementById('ml-bar');
 const mlLabel = document.getElementById('ml-label');

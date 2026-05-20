@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOCUS — Capstone Presentation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --border:  #2a2d3a;
+    --accent:  #6c63ff;
+    --green:   #4caf79;
+    --red:     #e05a5a;
+    --orange:  #f0a500;
+    --text:    #e8eaf0;
+    --muted:   #7b7f94;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Slide container ── */
+  .deck {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity .35s ease, transform .35s ease;
+    pointer-events: none;
+    text-align: center;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+  }
+
+  .slide.prev {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ── Nav bar ── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .nav button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .nav button:hover { opacity: .85; }
+  .nav button:disabled { opacity: .3; cursor: default; }
+
+  #slide-counter {
+    font-size: 13px;
+    color: var(--muted);
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* ── Dot indicators ── */
+  .dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .2s;
+    cursor: pointer;
+  }
+  .dot.on { background: var(--accent); }
+
+  /* ── Typography ── */
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(38px, 5vw, 64px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  h1 .accent { color: var(--accent); }
+
+  h2 {
+    font-size: clamp(26px, 3.5vw, 40px);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  .sub {
+    font-size: clamp(15px, 2vw, 19px);
+    color: var(--muted);
+    max-width: 680px;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+
+  .author {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .author strong { color: var(--text); }
+
+  /* ── Cards grid ── */
+  .cards {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    min-width: 180px;
+    flex: 1;
+    max-width: 220px;
+    text-align: center;
+  }
+
+  .card .icon { font-size: 28px; margin-bottom: 10px; }
+  .card .ctitle { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .card .cdesc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Highlight box ── */
+  .highlight {
+    background: rgba(108,99,255,.12);
+    border: 1px solid rgba(108,99,255,.35);
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-top: 20px;
+    font-size: clamp(15px, 2vw, 18px);
+    font-weight: 600;
+    color: var(--text);
+    max-width: 740px;
+    line-height: 1.5;
+  }
+
+  /* ── Two column ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 860px;
+    margin-top: 24px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    text-align: left;
+  }
+
+  .panel h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 12px;
+  }
+
+  .panel ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .panel ul li {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .panel ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 11px;
+    top: 1px;
+  }
+
+  /* ── Layer stack ── */
+  .layers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .layer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: left;
+  }
+
+  .layer-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .layer-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .layer-desc  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Stat row ── */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat .val { font-size: 42px; font-weight: 900; color: var(--accent); line-height: 1; }
+  .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Feature table ── */
+  .feat-table {
+    width: 100%;
+    max-width: 700px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  .feat-table th {
+    text-align: left;
+    padding: 8px 14px;
+    color: var(--accent);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .feat-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .feat-table tr:last-child td { border-bottom: none; }
+  .feat-table td:first-child { color: var(--accent); font-weight: 700; font-size: 12px; }
+
+  /* ── Comparison table ── */
+  .comp-table {
+    width: 100%;
+    max-width: 780px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  .comp-table th {
+    padding: 10px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    text-align: center;
+  }
+  .comp-table th:first-child { text-align: left; color: var(--accent); }
+  .comp-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+  }
+  .comp-table td:first-child { text-align: left; color: var(--text); font-weight: 600; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .yes { color: var(--green) !important; font-weight: 700; }
+  .no  { color: var(--red)   !important; }
+  .comp-table tr.focus-row td { background: rgba(108,99,255,.08); }
+  .comp-table tr.focus-row td:first-child { color: var(--accent); }
+
+  /* ── Quote ── */
+  .quote {
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    max-width: 700px;
+    margin-top: 8px;
+    position: relative;
+    padding: 0 20px;
+  }
+  .quote::before {
+    content: '"';
+    position: absolute;
+    left: -10px;
+    top: -10px;
+    font-size: 60px;
+    color: var(--accent);
+    opacity: .4;
+    line-height: 1;
+  }
+
+  /* ── Roadmap list ── */
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 640px;
+    text-align: left;
+  }
+
+  .road-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+
+  .road-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .road-badge.now  { background: rgba(76,175,121,.2);  color: var(--green); }
+  .road-badge.next { background: rgba(108,99,255,.2);  color: var(--accent); }
+  .road-badge.later{ background: rgba(240,165,0,.2);   color: var(--orange); }
+
+  .road-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .road-text strong { color: var(--text); }
+
+  /* ── Closing slide ── */
+  .big-focus {
+    font-size: clamp(80px, 14vw, 140px);
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -4px;
+    line-height: 1;
+  }
+
+  kbd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ── SLIDE 1: Title ── -->
+  <div class="slide active" id="s1">
+    <div class="label">ALU Capstone Project · 2026</div>
+    <h1><span class="accent">FOCUS</span></h1>
+    <p class="sub">A browser extension that understands what you're working on and keeps you there — using on-device machine learning, no cloud, no tracking.</p>
+    <div class="author">
+      <strong>Aubert Bihibindi</strong> · African Leadership University<br>
+      Computer Science · Capstone Defense
+    </div>
+  </div>
+
+  <!-- ── SLIDE 2: The Problem ── -->
+  <div class="slide" id="s2">
+    <div class="label">The Problem</div>
+    <h2>Remote learning broke our ability to stay on task</h2>
+    <p class="sub">Students in online environments open an average of 7+ unrelated tabs per study hour. The biggest barrier to learning today isn't access to content — it's attention.</p>
+    <div class="cards" style="margin-top:32px">
+      <div class="card">
+        <div class="icon">😵</div>
+        <div class="ctitle">Split attention</div>
+        <div class="cdesc">Notifications, feeds, and open tabs compete with every lecture and assignment</div>
+      </div>
+      <div class="card">
+        <div class="icon">📉</div>
+        <div class="ctitle">No awareness</div>
+        <div class="cdesc">Students don't realize how often they drift — they have no feedback loop</div>
+      </div>
+      <div class="card">
+        <div class="icon">🌍</div>
+        <div class="ctitle">Global scale</div>
+        <div class="cdesc">This affects every student with a laptop and internet — everywhere, not just rich universities</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 3: Gap in existing tools ── -->
+  <div class="slide" id="s3">
+    <div class="label">The Gap</div>
+    <h2>Existing tools are dumb blocklists</h2>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Blocks by domain</th>
+          <th>Context-aware</th>
+          <th>On-device ML</th>
+          <th>Free / No account</th>
+          <th>Live feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Freedom</td>
+          <td class="yes">✓</td>
+          <td class="no">✗</td>
+          <td class="no">✗</td>
+          <td class="no">✗ Paid</td>
+          <td class="no">✗</td>
+        </tr>
+        <tr>
+          <td>Cold Turkey</td>
+          <td class="yes">✓</td>
+          <td class="no">✗</td>
+          <td class="no">✗</td>
+          <td class="no">✗ Paid</td>
+          <td class="no">✗</td>
+        </tr>
+        <tr>
+          <td>StayFocusd</td>
+          <td class="yes">✓</td>
+          <td class="no">✗</td>
+          <td class="no">✗</td>
+          <td class="yes">✓</td>
+          <td class="no">✗</td>
+        </tr>
+        <tr class="focus-row">
+          <td>FOCUS (ours)</td>
+          <td class="yes">✓</td>
+          <td class="yes">✓ Task-aware</td>
+          <td class="yes">✓</td>
+          <td class="yes">✓</td>
+          <td class="yes">✓ Live log</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="highlight" style="margin-top:20px">
+      The same YouTube URL is allowed during a tutorial session and blocked during an essay — no competitor does this.
+    </div>
+  </div>
+
+  <!-- ── SLIDE 4: Problem Statement ── -->
+  <div class="slide" id="s4">
+    <div class="label">Problem Statement</div>
+    <div class="quote">
+      Existing focus tools block websites by domain. They cannot distinguish between a student using YouTube for a tutorial versus procrastinating on gaming videos. This makes them blunt instruments that either over-block or under-block depending on context.
+    </div>
+    <div class="highlight" style="margin-top:32px; font-size:20px">
+      FOCUS makes tab blocking context-aware by classifying every tab against the user's declared task using on-device machine learning.
+    </div>
+  </div>
+
+  <!-- ── SLIDE 5: How it works ── -->
+  <div class="slide" id="s5">
+    <div class="label">How It Works</div>
+    <h2>Three-layer decision engine</h2>
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-num">1</div>
+        <div>
+          <div class="layer-title">Hard rules (instant)</div>
+          <div class="layer-desc">Task domain → always allow. Known social platforms (Instagram, TikTok, Twitter…) → always block. Handles ~60% of cases before ML runs.</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">2</div>
+        <div>
+          <div class="layer-title">ML classifier (on-device)</div>
+          <div class="layer-desc">Logistic regression on 5 semantic features. Runs in &lt;1ms per tab switch. No network call. Handles the grey zone.</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num">3</div>
+        <div>
+          <div class="layer-title">TF-IDF fallback</div>
+          <div class="layer-desc">Cosine similarity between task description and page title as a final relevance signal.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 6: The ML Model ── -->
+  <div class="slide" id="s6">
+    <div class="label">Machine Learning</div>
+    <h2>Logistic regression — built from scratch</h2>
+    <table class="feat-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>What it measures</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>TF-IDF relevance</td><td>How much the page title overlaps with your task description using cosine similarity</td></tr>
+        <tr><td>Domain match</td><td>Whether the tab domain appears anywhere in the task text</td></tr>
+        <tr><td>Known distraction</td><td>Hardcoded flag for social / entertainment platforms</td></tr>
+        <tr><td>Keyword overlap</td><td>Shared meaningful words between task and page title</td></tr>
+        <tr><td>Domain in task</td><td>Direct string match between domain name and task words</td></tr>
+      </tbody>
+    </table>
+    <div class="stat-row">
+      <div class="stat"><div class="val">93.75%</div><div class="lbl">Test accuracy</div></div>
+      <div class="stat"><div class="val">0</div><div class="lbl">False positives</div></div>
+      <div class="stat"><div class="val">77</div><div class="lbl">Training pairs</div></div>
+      <div class="stat"><div class="val">&lt;1ms</div><div class="lbl">Inference time</div></div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 7: Key Features ── -->
+  <div class="slide" id="s7">
+    <div class="label">Features</div>
+    <h2>Built to compete with paid tools</h2>
+    <div class="two-col">
+      <div class="panel">
+        <h3>Focus control</h3>
+        <ul>
+          <li>Strict mode — no overrides, no escape</li>
+          <li>Distraction budget — set max overrides per session</li>
+          <li>Scheduled start — delay session by N minutes</li>
+          <li>Scans all open tabs on session start</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Visibility & feedback</h3>
+        <ul>
+          <li>ML confidence score on every blocked page</li>
+          <li>Live decision log — last 5 tab switches with probability</li>
+          <li>Session summary with focus score + grade (S/A/B/C)</li>
+          <li>Daily streak tracking</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Analytics dashboard</h3>
+        <ul>
+          <li>7-day focus score bar chart</li>
+          <li>All-time stats (sessions, hours, avg score)</li>
+          <li>Top distracting domains visualization</li>
+          <li>Recent sessions with letter grades</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Privacy first</h3>
+        <ul>
+          <li>Everything runs locally — no server, no account</li>
+          <li>All storage in chrome.storage.local only</li>
+          <li>ML weights bundled in extension — no API calls</li>
+          <li>Session data never leaves the device</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 8: Technical Architecture ── -->
+  <div class="slide" id="s8">
+    <div class="label">Technical Architecture</div>
+    <h2>Chrome MV3 extension — fully local</h2>
+    <div class="two-col" style="max-width:820px">
+      <div class="panel">
+        <h3>Extension layer</h3>
+        <ul>
+          <li>Manifest V3 service worker</li>
+          <li>chrome.tabs API — tab switch detection</li>
+          <li>chrome.alarms — scheduled sessions + duration alerts</li>
+          <li>chrome.storage.local — sessions, streak, state</li>
+          <li>chrome.scripting — tab redirect injection</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>ML layer</h3>
+        <ul>
+          <li>Python training pipeline (from scratch, no scikit-learn)</li>
+          <li>Batch gradient descent + L2 regularization</li>
+          <li>Weights exported as weights.json (bundled)</li>
+          <li>JS inference: classifier.js + tfidf.js</li>
+          <li>Decision in under 1ms, zero network dependency</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>UI layer</h3>
+        <ul>
+          <li>Popup: 3 views (idle / active / summary)</li>
+          <li>Blocked page: countdown ring + confidence bar</li>
+          <li>Dashboard: Canvas bar chart + sessions list</li>
+          <li>Onboarding: first-install walkthrough</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Security</h3>
+        <ul>
+          <li>Full CSP compliance — no inline handlers</li>
+          <li>No external scripts, no CDN dependencies</li>
+          <li>No API keys, no credentials, no secrets</li>
+          <li>Open source — auditable by anyone</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 9: GCGO Relevance ── -->
+  <div class="slide" id="s9">
+    <div class="label">GCGO Alignment</div>
+    <h2>Why this matters beyond the classroom</h2>
+    <div class="cards" style="margin-top:28px">
+      <div class="card">
+        <div class="icon">🎓</div>
+        <div class="ctitle">Education quality</div>
+        <div class="cdesc">Attention is the #1 invisible barrier in remote learning across Africa and the Global South</div>
+      </div>
+      <div class="card">
+        <div class="icon">🔒</div>
+        <div class="ctitle">Ethical AI</div>
+        <div class="cdesc">No surveillance, no cloud, no profiling. Built with African students' data rights in mind</div>
+      </div>
+      <div class="card">
+        <div class="icon">💡</div>
+        <div class="ctitle">African innovation</div>
+        <div class="cdesc">Context-aware blocking is a genuinely new approach — not an import, a local solution</div>
+      </div>
+      <div class="card">
+        <div class="icon">🚀</div>
+        <div class="ctitle">Entrepreneurship</div>
+        <div class="cdesc">Working product, store listing ready, monetization model defined — not a prototype</div>
+      </div>
+    </div>
+    <div class="highlight">
+      Every ALU student studying remotely is the target user. This is built for us, by us.
+    </div>
+  </div>
+
+  <!-- ── SLIDE 10: Monetization ── -->
+  <div class="slide" id="s10">
+    <div class="label">Business Model</div>
+    <h2>Three realistic paths to revenue</h2>
+    <div class="layers" style="max-width:700px">
+      <div class="layer">
+        <div class="layer-num" style="background:var(--green)">1</div>
+        <div>
+          <div class="layer-title">Freemium extension — $5/month</div>
+          <div class="layer-desc">Free: basic blocking + 7-day history. Paid: strict mode, scheduled sessions, full dashboard, streak export. All features already built. 1,000 users = $5,000 MRR.</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background:var(--accent)">2</div>
+        <div>
+          <div class="layer-title">University licensing — $500–2,000/year</div>
+          <div class="layer-desc">Sell to institutions, not individuals. One university deal covers months of runway. Privacy-first design is a direct selling point to schools wary of EdTech surveillance.</div>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-num" style="background:var(--orange)">3</div>
+        <div>
+          <div class="layer-title">Platform integration</div>
+          <div class="layer-desc">Coursera, ALX, Andela want real focused-time data. FOCUS measures actual attention, not time-on-page. That's a data product worth acquiring.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 11: Roadmap ── -->
+  <div class="slide" id="s11">
+    <div class="label">Roadmap</div>
+    <h2>What's next after capstone</h2>
+    <div class="roadmap">
+      <div class="road-item">
+        <span class="road-badge now">NOW</span>
+        <div class="road-text"><strong>Chrome Web Store submission</strong> — listing, icons, privacy policy all ready. Submit this week.</div>
+      </div>
+      <div class="road-item">
+        <span class="road-badge now">NOW</span>
+        <div class="road-text"><strong>10 real student beta users</strong> — collect override patterns as future training data to improve model accuracy.</div>
+      </div>
+      <div class="road-item">
+        <span class="road-badge next">NEXT</span>
+        <div class="road-text"><strong>Voice feedback</strong> — Web Speech API (built into Chrome, no API key). Spoken alerts when blocked, session start/end summary read aloud.</div>
+      </div>
+      <div class="road-item">
+        <span class="road-badge next">NEXT</span>
+        <div class="road-text"><strong>Pomodoro timer integration</strong> — structured work/break cycles with automatic session pause during breaks.</div>
+      </div>
+      <div class="road-item">
+        <span class="road-badge later">LATER</span>
+        <div class="road-text"><strong>University pilot</strong> — approach ALU's student services team, then expand to partner institutions across East Africa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 12: Closing ── -->
+  <div class="slide" id="s12">
+    <div class="big-focus">FOCUS</div>
+    <p class="sub" style="margin-top:20px; font-size:18px">
+      Context-aware distraction blocking, built from first principles,<br>running entirely on your device.
+    </p>
+    <div class="cards" style="margin-top:32px; gap:12px">
+      <div class="card" style="max-width:180px">
+        <div class="icon">🔗</div>
+        <div class="ctitle">GitHub</div>
+        <div class="cdesc">github.com/aubert-gloire/Focus</div>
+      </div>
+      <div class="card" style="max-width:180px">
+        <div class="icon">🎓</div>
+        <div class="ctitle">Built by</div>
+        <div class="cdesc">Aubert Bihibindi · ALU · 2026</div>
+      </div>
+      <div class="card" style="max-width:180px">
+        <div class="icon">💬</div>
+        <div class="ctitle">Questions?</div>
+        <div class="cdesc">Ready for the hard ones.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── Nav ── -->
+<div class="nav">
+  <button id="btn-prev" disabled>← Prev</button>
+  <div class="dots" id="dots"></div>
+  <span id="slide-counter">1 / 12</span>
+  <button id="btn-next">Next →</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsEl  = document.getElementById('dots');
+  const counter = document.getElementById('slide-counter');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('prev');
+    setTimeout(() => slides[current].classList.remove('prev'), 400);
+    current = n;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === current));
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === slides.length - 1;
+  }
+
+  btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1); });
+  btnNext.addEventListener('click', () => { if (current < slides.length - 1) goTo(current + 1); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') btnNext.click();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   btnPrev.click();
+  });
+</script>
+</body>
+</html>

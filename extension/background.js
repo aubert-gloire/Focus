@@ -233,6 +233,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         message: `Your ${session.expectedDurationMin}-minute session on "${session.task}" has ended.`,
         priority: 2
       });
+      speak(`Time is up. Your ${session.expectedDurationMin} minute session has ended.`);
       await persistSession();
     }
   }
@@ -245,6 +246,29 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
   }
 });
+
+// ─── Voice feedback ───────────────────────────────────────────────────────────
+
+async function speak(text) {
+  const { voiceEnabled } = await chrome.storage.local.get('voiceEnabled');
+  if (voiceEnabled === false) return;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || !tab.id) return;
+  const url = tab.url || '';
+  if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || url.startsWith('moz-extension://')) return;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: t => {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(t);
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+      },
+      args: [text]
+    });
+  } catch (_) {}
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -359,6 +383,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     case 'OVERRIDE_BLOCK':
       if (session) {
         session.overridesUsed = (session.overridesUsed || 0) + 1;
+        const left = session.distractionBudget - session.overridesUsed;
+        if (left === 1) speak('Heads up — only one override left.');
+        if (left <= 0 && session.distractionBudget > 0) speak('No overrides left. Strict mode is now active.');
         persistSession();
       }
       sendResponse({ ok: true });
